@@ -14,32 +14,49 @@ use FOS\RestBundle\View\View;
 use Mobility\UsuarioBundle\Entity\usuario;
 
 
-//MobilityUsuarioBundle:usuario
+
 
 class ApiRestController extends FOSRestController
 {
+
+	static private $APIREST_USUARIO_NOMBRE="nombre";
+	static private $APIREST_USUARIO_APELLIDO="apellido";
+	static private $APIREST_USUARIO_FECHA_NACIMIENTO="fechacNacimiento";
+	static private $APIREST_USUARIO_EDAD="edad";
+	static private $APIREST_USUARIO_GENERO="genero";
+	static private $APIREST_USUARIO_CIUDAD="ciudad";
+	static private $APIREST_USUARIO_EMAIL="email";
+	static private $APIREST_USUARIO_LOGIN="login";
+	static private $APIREST_USUARIO_PASSWORD="password";
+
+	
 	/**
      * @Route("/apiRestV1/")
      */
-    public function indexAction()
-    {
+    public function indexAction(){
         return new Response("Bienvenido al modulo de apirest");
     }
 
     /**
      * @Rest\Get("/apiRestV1/usuario")
      */
-    public function getAction()
-    {
-		$restresult = $this->getDoctrine()->getRepository('MobilityUsuarioBundle:usuario')->findAll();
+    public function getAction(){
 
-        if ($restresult === null) {
-          return new View("there are no users exist", Response::HTTP_NOT_FOUND);
-		}
-        $respuesta["status"]="true";
-		$respuesta["usuario"]=$restresult;
+		$result = $this->getDoctrine()->getRepository('MobilityUsuarioBundle:usuario')->findAll();
+
+        if ($result === null) {
+          
+        	$respuesta["status"]="true";
+        	$respuesta["msg"]="No hay usuarios existentes";
 		
-		return $respuesta;
+			return $respuesta;
+		}else{
+			$respuesta["status"]="true";
+			$respuesta["usuario"]=$result;
+		
+		 	return $respuesta;
+		}
+       
 	}
 
 	/**
@@ -47,18 +64,22 @@ class ApiRestController extends FOSRestController
 	 */
 	public function idAction($id)
 	{
-		$singleresult = $this->getDoctrine()->getRepository('MobilityUsuarioBundle:usuario')->find($id);
-		if ($singleresult === null) {
-			return new View("user not found", Response::HTTP_NOT_FOUND);
+		$result = $this->getDoctrine()->getRepository('MobilityUsuarioBundle:usuario')->find($id);
+		if ($result === null) {
+
+			$respuesta["status"]="false";
+        	$respuesta["msg"]="No hay usuarios existentes";
+        	
+        	return $respuesta;
+		}else{
+			$respuesta["status"]="true";
+			$respuesta["usuario"]=$result;
+		
+			return $respuesta;
 		}
 		
-		$respuesta["status"]="true";
-		$respuesta["usuario"]=$singleresult;
 		
-		return $respuesta;
 	}
-
-	
 
 	/**
 	 * @Rest\Post("/apiRestV1/usuario")
@@ -67,38 +88,46 @@ class ApiRestController extends FOSRestController
 
 		$data = new Usuario();
 
-			$nombre= $request->get('nombre');
-			$apellido= $request->get('apellido');
-			$fechacNacimiento= $request->get('fechacNacimiento');
-			$edad= $request->get('edad');
-			$genero= $request->get('genero');
-			$ciudad= $request->get('ciudad');
-			$email= $request->get('email');
-			$login= $request->get('login');
-			$password= $request->get('password');
+			$nombre= $request->get($APIREST_USUARIO_NOMBRE);
+			$apellido= $request->get($APIREST_USUARIO_APELLIDO);
+			$fechaNacimiento= $request->get($APIREST_USUARIO_FECHA_NACIMIENTO);
+			$edad= $request->get($APIREST_USUARIO_EDAD);
+			$genero= $request->get($APIREST_USUARIO_GENERO);
+			$ciudad= $request->get($APIREST_USUARIO_CIUDAD);
+			$email= $request->get($APIREST_USUARIO_EMAIL);
+			$login= $request->get($APIREST_USUARIO_LOGIN);
+			$password= $request->get($APIREST_USUARIO_PASSWORD);
 
-			if(empty($nombre) ||empty($apellido) ||empty($fechacNacimiento) ||empty($edad) ||
-			 	empty($genero) ||empty($ciudad) ||empty($email) ||empty($login) ||
-			 	empty($password) ){
-				return new View("NULL VALUES ARE NOT ALLOWED", Response::HTTP_NOT_ACCEPTABLE);
+			if(empty($nombre) ||empty($apellido) ||empty($fechaNacimiento) 
+				||empty($edad) ||empty($genero) ||empty($ciudad) ||empty($email)
+				 ||empty($login) ||empty($password) ){
+
+				$respuesta["status"]="false";
+        		$respuesta["msg"]="Valores no pemitidos";
+				
+				return $respuesta;
+			}else{
+
+				$data->setNombre($nombre);
+				$data->setApellido($apellido);
+				$data->setFechacNacimiento($fechaNacimiento);
+				$data->setEdad($edad);
+				$data->setGenero($genero);
+				$data->setCiudad($ciudad);
+				$data->setEmail($email);
+				$data->setLogin($login);
+				$data->setPassword($password);
+
+				$em = $this->getDoctrine()->getManager();
+				$em->persist($data);
+				$em->flush();
+
+
+				$respuesta["status"]="true";
+				$respuesta["msg"]="usuario creado";
+
+				return $respuesta;
 			}
-
-			 $data->setNombre($nombre);
-			 $data->setApellido($apellido);
-			 $data->setFechacNacimiento($fechacNacimiento);
-			 $data->setEdad($edad);
-			 $data->setGenero($genero);
-			 $data->setCiudad($ciudad);
-			 $data->setEmail($email);
-			 $data->setLogin($login);
-			 $data->setPassword($password);
-			 
-			 $em = $this->getDoctrine()->getManager();
-			 $em->persist($data);
-			 $em->flush();
-
-			 return new View("User Added Successfully", Response::HTTP_OK);
-
 
 	}
 
@@ -107,109 +136,98 @@ class ApiRestController extends FOSRestController
 	 */
 	public function putAction(Request $request,$id){
 
-
-
 		$data =new Usuario();
 
-		$nombre= $request->get('nombre');
-		$apellido= $request->get('apellido');
-		$fechacNacimiento= $request->get('fechacNacimiento');
-		$edad= $request->get('edad');
-		$genero= $request->get('genero');
-		$ciudad= $request->get('ciudad');
-		$email= $request->get('email');
-		$login= $request->get('login');
-		$password= $request->get('password');
+		$nombre= $request->get($APIREST_USUARIO_NOMBRE);
+		$apellido= $request->get($APIREST_USUARIO_APELLIDO);
+		$fechaNacimiento= $request->get($APIREST_USUARIO_FECHA_NACIMIENTO);
+		$edad= $request->get($APIREST_USUARIO_EDAD);
+		$genero= $request->get($APIREST_USUARIO_GENERO);
+		$ciudad= $request->get($APIREST_USUARIO_CIUDAD);
+		$email= $request->get($APIREST_USUARIO_EMAIL);
+		$login= $request->get($APIREST_USUARIO_LOGIN);
+		$password= $request->get($APIREST_USUARIO_PASSWORD);
 
-		//return new View("PUT");
-		
-
-		
-
-		
 		$data= $this->getDoctrine()->getRepository('MobilityUsuarioBundle:usuario')->find($id);
 
-		//return new View("request ".$request);
-
 		
-
 		if(empty($data)){
-			return new View("Usuario no ecncontrado");
-		}
 
-		else if(
-			(!empty($nombre))||(!empty($apellido))||(!empty($fechacNacimiento))||(!empty($edad))||(!empty($genero))||(!empty($ciudad))||(!empty($email))||(!empty($login))||(!empty($password))
-			){
+			$respuesta["status"]="false";
+        	$respuesta["msg"]="Usuario no encontrado";
+				
+			return $respuesta;
+			
+		}else if(
+			(!empty($nombre))||(!empty($apellido))||(!empty($fechaNacimiento))||
+			(!empty($edad))||(!empty($genero))||(!empty($ciudad))||(!empty($email))||(!empty($login))||(!empty($password))
+		){
 
 			if(!empty($nombre)){
 
 				$data->setNombre($nombre);
 
-			}
-			if(!empty($apellido)){
+			}if(!empty($apellido)){
 
 				$data->setApellido($apellido);
 
-			}
-			if(!empty($fechacNacimiento)){
+			}if(!empty($fechaNacimiento)){
 
-				$data->setFechacNacimiento($fechacNacimiento);
+				$data->setFechacNacimiento($fechaNacimiento);
 
-			}
-			if(!empty($edad)){
+			}if(!empty($edad)){
 
 				$data->setEdad($edad);
 
-			}
-			if(!empty($ciudad)){
+			}if(!empty($ciudad)){
 
 				$data->setCiudad($ciudad);
 
-			}
-			
-			if(!empty($genero)){
+			}if(!empty($genero)){
 
 				$data->setGenero($genero);
 
-			}
-			if(!empty($ciudad)){
+			}if(!empty($ciudad)){
 
 				$data->setCiudad($ciudad);
 
-			}
-			if(!empty($email)){
+			}if(!empty($email)){
 
 				$data->setEmail($email);
 
-			}
-
-			if(!empty($login)){
+			}if(!empty($login)){
 
 				$data->setLogin($login);
 
-			}
-			if(!empty($password)){
+			}if(!empty($password)){
 
 				$data->setPassword($password);
 			}
+
 			$em = $this->getDoctrine()->getManager();
 			$em->persist($data);
 			$em->flush();
-			return new View("User Updated Successfully", Response::HTTP_OK);
+
+			$respuesta["status"]="true";
+        	$respuesta["msg"]="El Usuario ".$nombre."ha sido actualizado";
+				
+			return $respuesta;
+
 		}else{
-			return new View("User name or role cannot be empty", Response::HTTP_NOT_ACCEPTABLE);
+			$respuesta["status"]="false";
+        	$respuesta["msg"]="No se pudo actualizar usuario";
+				
+			return $respuesta;
+			
 		}
-
-
-
 
 	}
 
 	/**
 	 * @Rest\Delete("/apiRestV1/usuario/{id}")
 	 */
-	public function deleteAction($id) 
-	{
+	public function deleteAction($id) {
+		
 		$data = new Usuario;
 		$sn = $this->getDoctrine()->getManager();
 		$usuario = $this->getDoctrine()->getRepository('MobilityUsuarioBundle:usuario')->find($id);
@@ -221,8 +239,11 @@ class ApiRestController extends FOSRestController
 			$sn->remove($usuario);
 			$sn->flush();
 		}
+		$respuesta["estado"]="true";
+		$respuesta["msg"]="Usuario borrado";
 		
-		return new View("usuario borrado", Response::HTTP_OK);
+		return $respuesta;
+		
 	}
 
 
