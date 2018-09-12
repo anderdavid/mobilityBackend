@@ -19,15 +19,15 @@ use Mobility\UsuarioBundle\Entity\usuario;
 class ApiRestController extends FOSRestController
 {
 
-	static private $APIREST_USUARIO_NOMBRE="nombre";
-	static private $APIREST_USUARIO_APELLIDO="apellido";
-	static private $APIREST_USUARIO_FECHA_NACIMIENTO="fechacNacimiento";
-	static private $APIREST_USUARIO_EDAD="edad";
-	static private $APIREST_USUARIO_GENERO="genero";
-	static private $APIREST_USUARIO_CIUDAD="ciudad";
-	static private $APIREST_USUARIO_EMAIL="email";
-	static private $APIREST_USUARIO_LOGIN="login";
-	static private $APIREST_USUARIO_PASSWORD="password";
+	private $APIREST_USUARIO_NOMBRE="nombre";
+	private $APIREST_USUARIO_APELLIDO="apellido";
+	private $APIREST_USUARIO_FECHA_NACIMIENTO="fechacNacimiento";
+	private $APIREST_USUARIO_EDAD="edad";
+	private $APIREST_USUARIO_GENERO="genero";
+	private $APIREST_USUARIO_CIUDAD="ciudad";
+	private $APIREST_USUARIO_EMAIL="email";
+	private $APIREST_USUARIO_LOGIN="login";
+	private $APIREST_USUARIO_PASSWORD="password";
 
 	
 	/**
@@ -42,9 +42,23 @@ class ApiRestController extends FOSRestController
      */
     public function getAction(){
 
+    	$em = $this->getDoctrine()->getEntityManager();
+        $db = $em->getConnection();
+
+        $query ="SELECT COUNT(*) AS countUser FROM usuario";
+        $stmt = $db->prepare($query);
+        $stmt->execute();
+        $res=$stmt->fetchAll();
+
+         foreach ($res as $users) {
+         	$countUser=$users["countUser"];
+         }
+
+
+
 		$result = $this->getDoctrine()->getRepository('MobilityUsuarioBundle:usuario')->findAll();
 
-        if ($result === null) {
+		if ($result === null || $countUser==0) {
           
         	$respuesta["status"]="true";
         	$respuesta["msg"]="No hay usuarios existentes";
@@ -52,6 +66,7 @@ class ApiRestController extends FOSRestController
 			return $respuesta;
 		}else{
 			$respuesta["status"]="true";
+			$respuesta["countUser"]=$countUser;
 			$respuesta["usuario"]=$result;
 		
 		 	return $respuesta;
@@ -68,7 +83,7 @@ class ApiRestController extends FOSRestController
 		if ($result === null) {
 
 			$respuesta["status"]="false";
-        	$respuesta["msg"]="No hay usuarios existentes";
+        	$respuesta["msg"]="Usuario no encontrado";
         	
         	return $respuesta;
 		}else{
@@ -88,25 +103,25 @@ class ApiRestController extends FOSRestController
 
 		$data = new Usuario();
 
-			$nombre= $request->get($APIREST_USUARIO_NOMBRE);
-			$apellido= $request->get($APIREST_USUARIO_APELLIDO);
-			$fechaNacimiento= $request->get($APIREST_USUARIO_FECHA_NACIMIENTO);
-			$edad= $request->get($APIREST_USUARIO_EDAD);
-			$genero= $request->get($APIREST_USUARIO_GENERO);
-			$ciudad= $request->get($APIREST_USUARIO_CIUDAD);
-			$email= $request->get($APIREST_USUARIO_EMAIL);
-			$login= $request->get($APIREST_USUARIO_LOGIN);
-			$password= $request->get($APIREST_USUARIO_PASSWORD);
+		$nombre= $request->get($this->APIREST_USUARIO_NOMBRE);
+		$apellido= $request->get($this->APIREST_USUARIO_APELLIDO);
+		$fechaNacimiento= $request->get($this->APIREST_USUARIO_FECHA_NACIMIENTO);
+		$edad= $request->get($this->APIREST_USUARIO_EDAD);
+		$genero= $request->get($this->APIREST_USUARIO_GENERO);
+		$ciudad= $request->get($this->APIREST_USUARIO_CIUDAD);
+		$email= $request->get($this->APIREST_USUARIO_EMAIL);
+		$login= $request->get($this->APIREST_USUARIO_LOGIN);
+		$password= $request->get($this->APIREST_USUARIO_PASSWORD);
 
-			if(empty($nombre) ||empty($apellido) ||empty($fechaNacimiento) 
+        if(empty($nombre) ||empty($apellido) ||empty($fechaNacimiento) 
 				||empty($edad) ||empty($genero) ||empty($ciudad) ||empty($email)
 				 ||empty($login) ||empty($password) ){
 
-				$respuesta["status"]="false";
-        		$respuesta["msg"]="Valores no pemitidos";
+			$respuesta["status"]="false";
+        	$respuesta["msg"]="Valores no pemitidos";
 				
-				return $respuesta;
-			}else{
+			return $respuesta;
+		}else{
 
 				$data->setNombre($nombre);
 				$data->setApellido($apellido);
@@ -138,15 +153,15 @@ class ApiRestController extends FOSRestController
 
 		$data =new Usuario();
 
-		$nombre= $request->get($APIREST_USUARIO_NOMBRE);
-		$apellido= $request->get($APIREST_USUARIO_APELLIDO);
-		$fechaNacimiento= $request->get($APIREST_USUARIO_FECHA_NACIMIENTO);
-		$edad= $request->get($APIREST_USUARIO_EDAD);
-		$genero= $request->get($APIREST_USUARIO_GENERO);
-		$ciudad= $request->get($APIREST_USUARIO_CIUDAD);
-		$email= $request->get($APIREST_USUARIO_EMAIL);
-		$login= $request->get($APIREST_USUARIO_LOGIN);
-		$password= $request->get($APIREST_USUARIO_PASSWORD);
+		$nombre= $request->get($this->APIREST_USUARIO_NOMBRE);
+		$apellido= $request->get($this->APIREST_USUARIO_APELLIDO);
+		$fechaNacimiento= $request->get($this->APIREST_USUARIO_FECHA_NACIMIENTO);
+		$edad= $request->get($this->APIREST_USUARIO_EDAD);
+		$genero= $request->get($this->APIREST_USUARIO_GENERO);
+		$ciudad= $request->get($this->APIREST_USUARIO_CIUDAD);
+		$email= $request->get($this->APIREST_USUARIO_EMAIL);
+		$login= $request->get($this->APIREST_USUARIO_LOGIN);
+		$password= $request->get($this->APIREST_USUARIO_PASSWORD);
 
 		$data= $this->getDoctrine()->getRepository('MobilityUsuarioBundle:usuario')->find($id);
 
@@ -209,7 +224,7 @@ class ApiRestController extends FOSRestController
 			$em->flush();
 
 			$respuesta["status"]="true";
-        	$respuesta["msg"]="El Usuario ".$nombre."ha sido actualizado";
+        	$respuesta["msg"]="El Usuario ".$nombre." ha sido actualizado";
 				
 			return $respuesta;
 
@@ -233,16 +248,20 @@ class ApiRestController extends FOSRestController
 		$usuario = $this->getDoctrine()->getRepository('MobilityUsuarioBundle:usuario')->find($id);
 		
 		if (empty($usuario)) {
-			return new View("usuario no encontrado", Response::HTTP_NOT_FOUND);
+			$respuesta["estado"]="true";
+			$respuesta["msg"]="Usuario no encontrado";
+			return $respuesta;
 		}
 		else {
 			$sn->remove($usuario);
 			$sn->flush();
-		}
-		$respuesta["estado"]="true";
-		$respuesta["msg"]="Usuario borrado";
+
+			$respuesta["estado"]="true";
+			$respuesta["msg"]="Usuario borrado";
 		
-		return $respuesta;
+			return $respuesta;
+		}
+		
 		
 	}
 
