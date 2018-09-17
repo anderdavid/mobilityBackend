@@ -106,7 +106,8 @@ class ApiRestController extends FOSRestController
 		$nombre= $request->get($this->APIREST_USUARIO_NOMBRE);
 		$apellido= $request->get($this->APIREST_USUARIO_APELLIDO);
 		$fechaNacimiento= $request->get($this->APIREST_USUARIO_FECHA_NACIMIENTO);
-		$edad= $request->get($this->APIREST_USUARIO_EDAD);
+		//$edad= $request->get($this->APIREST_USUARIO_EDAD);
+		$edad=$this->diffDate($fechaNacimiento);
 		$genero= $request->get($this->APIREST_USUARIO_GENERO);
 		$ciudad= $request->get($this->APIREST_USUARIO_CIUDAD);
 		$email= $request->get($this->APIREST_USUARIO_EMAIL);
