@@ -156,7 +156,7 @@ class ApiRestController extends FOSRestController
 		$nombre= $request->get($this->APIREST_USUARIO_NOMBRE);
 		$apellido= $request->get($this->APIREST_USUARIO_APELLIDO);
 		$fechaNacimiento= $request->get($this->APIREST_USUARIO_FECHA_NACIMIENTO);
-		$edad= $request->get($this->APIREST_USUARIO_EDAD);
+		$edad=$this->diffDate($fechaNacimiento);
 		$genero= $request->get($this->APIREST_USUARIO_GENERO);
 		$ciudad= $request->get($this->APIREST_USUARIO_CIUDAD);
 		$email= $request->get($this->APIREST_USUARIO_EMAIL);
@@ -189,6 +189,7 @@ class ApiRestController extends FOSRestController
 			}if(!empty($fechaNacimiento)){
 
 				$data->setFechacNacimiento($fechaNacimiento);
+
 
 			}if(!empty($edad)){
 
@@ -264,6 +265,29 @@ class ApiRestController extends FOSRestController
 		
 		
 	}
+
+	
+	public function diffDate($fechaNacimiento){
+
+		$em = $this->getDoctrine()->getEntityManager();
+		$db = $em->getConnection();
+
+
+		$query="SELECT TIMESTAMPDIFF(YEAR,'".$fechaNacimiento."',CURDATE()) 
+		AS edad;";
+
+		$stmt = $db->prepare($query);
+  	    $stmt->execute();
+        $res=$stmt->fetchAll();
+
+         foreach ($res as $respuesta) {
+         	$edadUser=$respuesta["edad"];
+         }
+         return $edadUser;
+     
+	}
+
+
 
 
 }
