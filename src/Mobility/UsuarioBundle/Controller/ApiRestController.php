@@ -106,7 +106,6 @@ class ApiRestController extends FOSRestController
 		$nombre= $request->get($this->APIREST_USUARIO_NOMBRE);
 		$apellido= $request->get($this->APIREST_USUARIO_APELLIDO);
 		$fechaNacimiento= $request->get($this->APIREST_USUARIO_FECHA_NACIMIENTO);
-		//$edad= $request->get($this->APIREST_USUARIO_EDAD);
 		$edad=$this->diffDate($fechaNacimiento);
 		$genero= $request->get($this->APIREST_USUARIO_GENERO);
 		$ciudad= $request->get($this->APIREST_USUARIO_CIUDAD);
@@ -122,6 +121,13 @@ class ApiRestController extends FOSRestController
         	$respuesta["msg"]="Valores no pemitidos";
 				
 			return $respuesta;
+		}else if($this->existUser($login)){
+			
+			$respuesta["status"]="false";
+        	$respuesta["msg"]="El usuario ya existe,favor cambie su Login";
+
+        	
+        	return $respuesta;
 		}else{
 
 				$data->setNombre($nombre);
@@ -286,6 +292,27 @@ class ApiRestController extends FOSRestController
          }
          return $edadUser;
      
+	}
+
+	
+	public function existUser($login){
+
+		$em = $this->getDoctrine()->getEntityManager();
+		$db = $em->getConnection();
+
+		$query="SELECT *FROM usuario WHERE login='".$login."'";
+
+		$stmt = $db->prepare($query);
+  	    $stmt->execute();
+        $res=$stmt->fetchAll();
+
+        if($res!=null){
+        	return true;
+        }else{
+        	return false;
+        }
+
+		
 	}
 
 
