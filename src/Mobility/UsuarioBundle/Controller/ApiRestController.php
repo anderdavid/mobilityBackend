@@ -54,16 +54,17 @@ class ApiRestController extends FOSRestController
          	$countUser=$users["countUser"];
          }
 
+		
+		$usuarios = $this->getDoctrine()->getRepository('MobilityUsuarioBundle:usuario');
+		$result =$usuarios->findAllDesc();
 
-
-		$result = $this->getDoctrine()->getRepository('MobilityUsuarioBundle:usuario')->findAll();
 
 		if ($result === null || $countUser==0) {
           
         	$respuesta["status"]="true";
         	$respuesta["msg"]="No hay usuarios existentes";
 		
-			return $respuesta;
+			return $respuesta; 
 		}else{
 			$respuesta["status"]="true";
 			$respuesta["countUser"]=$countUser;

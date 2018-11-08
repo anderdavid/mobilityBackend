@@ -10,4 +10,15 @@ namespace Mobility\UsuarioBundle\Repository;
  */
 class usuarioRepository extends \Doctrine\ORM\EntityRepository
 {
+	public function findAllDesc(): array
+    {
+		/**
+		 * Mostrar todos los usuarios en orden descendente
+		*/
+        $qb = $this->createQueryBuilder('p')
+			->orderBy('p.nombre', 'ASC')
+			->getQuery();
+		
+        return $qb->execute();
+	}
 }
