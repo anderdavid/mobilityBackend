@@ -310,5 +310,8 @@ class usuario
     {
         return $this->password;
     }
+
+
+    
 }
 

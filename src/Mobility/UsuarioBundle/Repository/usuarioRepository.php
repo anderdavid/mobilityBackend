@@ -21,4 +21,5 @@ class usuarioRepository extends \Doctrine\ORM\EntityRepository
 		
         return $qb->execute();
 	}
+
 }

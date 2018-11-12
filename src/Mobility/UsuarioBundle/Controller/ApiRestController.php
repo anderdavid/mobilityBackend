@@ -14,8 +14,6 @@ use FOS\RestBundle\View\View;
 use Mobility\UsuarioBundle\Entity\usuario;
 
 
-
-
 class ApiRestController extends FOSRestController
 {
 
@@ -274,6 +272,32 @@ class ApiRestController extends FOSRestController
 		
 	}
 
+	/**
+	 * @Rest\Post("/apiRestV1/usuario/login/")
+	 */
+	public function loginAction(Request $request){
+
+		$login= $request->get($this->APIREST_USUARIO_LOGIN);
+		$password= $request->get($this->APIREST_USUARIO_PASSWORD);
+
+
+		
+
+		$usuario = $this->loginUser($login,$password);
+
+		if($usuario!=null){
+
+			$response["status"] ="true";
+			$response["usuario"]=$usuario;
+
+		}else{
+			$response["status"] ="false";
+			$response["msg"]="usuario no encontrado";
+		}
+
+		return $response;
+	}
+
 	
 	public function diffDate($fechaNacimiento){
 
@@ -298,7 +322,7 @@ class ApiRestController extends FOSRestController
 	
 	public function existUser($login){
 
-		$em = $this->getDoctrine()->getEntityManager();
+		$em = $this->getDoctrine()->getEntityManager(); 
 		$db = $em->getConnection();
 
 		$query="SELECT *FROM usuario WHERE login='".$login."'";
@@ -315,6 +339,26 @@ class ApiRestController extends FOSRestController
 
 		
 	}
+
+	public function loginUser($login,$password){
+
+        $em = $this->getDoctrine()->getEntityManager();
+        $db = $em->getConnection();
+
+        $query="SELECT *FROM usuario WHERE login='".$login."' AND password='".$password."'";
+
+        $stmt = $db->prepare($query);
+        $stmt->execute();
+        $res=$stmt->fetchAll();
+
+        if($res!=null){
+            return $res;
+        }else{
+            return false;
+        }
+
+	}
+	
 
 
 
